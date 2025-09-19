@@ -9,7 +9,8 @@ body {
   font-family: 'Segoe UI', 'Inter', sans-serif;
   line-height: 1.6;
   color: #333;
-  background-color: #ffffff;
+  /* Light grey background complements the pastel pattern */
+  background-color: #f7f9fc;
 }
 
 a {
@@ -27,7 +28,11 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
-  border-bottom: 1px solid #f0f0f0;
+  /* Subtle drop shadow instead of a hard border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .logo {
@@ -45,17 +50,18 @@ nav a {
   font-weight: 500;
 }
 
+/* Hero section with pastel pattern overlaid by a translucent white layer */
 .hero {
   position: relative;
-  height: 60vh;
+  min-height: 50vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #333;
+  color: #2a2a2a;
   background-image: linear-gradient(
-      rgba(255, 255, 255, 0.8),
-      rgba(255, 255, 255, 0.8)
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.9)
     ),
     url('background.jpg');
   background-size: cover;
@@ -66,53 +72,71 @@ nav a {
   max-width: 800px;
 }
 
+/* Larger, elegant hero title */
 .hero h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
-.hero p {
-  font-size: 1.2rem;
+/* Styling for the tagline inside the hero */
+.hero .tagline {
+  font-size: 1.1rem;
   margin: 0 auto;
   max-width: 700px;
+  color: #4a4a4a;
 }
 
+/* About section base styling */
 .about {
+  padding: 60px 40px;
+  background-color: #ffffff;
+}
+
+/* Container inside the about section to align image and text */
+.about-inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 40px;
-  padding: 60px 40px;
-  background-color: #fafafa;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.about img {
-  width: 250px;
+/* Avatar image inside about */
+.about-inner img {
+  width: 220px;
   border-radius: 8px;
   flex-shrink: 0;
 }
 
+/* About text container */
 .about-text {
   flex: 1;
   min-width: 300px;
 }
 
+/* About section heading */
 .about-text h2 {
   font-size: 2rem;
   margin-bottom: 15px;
+  font-weight: 600;
 }
 
+/* About section paragraphs */
 .about-text p {
   margin-bottom: 15px;
   color: #555;
+  line-height: 1.7;
 }
 
+/* Blog preview section */
 .blog-preview {
-  background-color: #ffffff;
+  background-color: #f7f9fc;
   padding: 60px 40px;
-  border-top: 1px solid #f0f0f0;
-  border-bottom: 1px solid #f0f0f0;
+  border-top: 1px solid #e5e8ec;
+  border-bottom: 1px solid #e5e8ec;
 }
 
 .blog-container {
@@ -133,10 +157,10 @@ nav a {
 }
 
 footer {
-  background-color: #fafafa;
+  background-color: #ffffff;
   text-align: center;
   padding: 40px 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #e5e8ec;
 }
 
 footer p {
