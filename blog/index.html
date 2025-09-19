@@ -1,104 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog – Trent X Meta</title>
-    <meta
-      name="description"
-      content="Read the latest posts from Trent X Meta covering AI, crypto, Bitcoin, XRP and Doginal Dogs community updates."
-    />
-    <meta
-      name="keywords"
-      content="Trent X Meta blog, AI blog, crypto blog, Bitcoin, XRP, Doginal Dogs, DCA, future tech"
-    />
-    <meta property="og:title" content="Blog – Trent X Meta" />
-    <meta
-      property="og:description"
-      content="Thoughts, insights and updates from Trent X Meta on AI, crypto and more."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/avatar.jpg" />
-    <link rel="icon" href="/avatar.jpg" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      integrity="sha512-yH20tDWVKn24fYT1zRAPvwMyjYyYHE1Gv65J8Bm0Vq6VhPef39ssnSdTTG481LYp8IgGYaG8TGvYvZDh7imP2Q=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blog — TRENTXMETA</title>
+    <meta name="description" content="Blog by TRENTXMETA. AI, marketing, DCA and building. Short posts — no fluff." />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header>
-      <div class="logo">Trent X Meta</div>
-      <nav>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/blog/index.html">Blog</a></li>
-        </ul>
-      </nav>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="logo">TRENTXMETA</div>
+        <nav class="nav">
+          <a href="/">Home</a>
+          <a class="active" href="/blog/">Blog</a>
+        </nav>
+      </div>
     </header>
-    <main class="blog-list">
-      <h1>Blog</h1>
-      <div class="blog-search">
-        <input
-          type="search"
-          id="search"
-          placeholder="Search posts..."
-          aria-label="Search blog posts"
-        />
-      </div>
-      <!-- Blog posts -->
-      <div class="post-item">
-        <h2><a href="/blog/posts/welcome.html">Welcome to My Blog</a></h2>
-        <p class="summary">
-          A short introduction to who I am, what I do and what you can expect to
-          find on this blog.
-        </p>
-        <a class="read-more" href="/blog/posts/welcome.html">Read more</a>
-      </div>
-      <div class="post-item">
-        <h2>
-          <a href="/blog/posts/dca-bitcoin-xrp-ai.html"
-            >DCA into Bitcoin &amp; XRP, AI and the Future</a
-          >
-        </h2>
-        <p class="summary">
-          Sharing my strategy for dollar-cost averaging into major cryptocurrencies
-          while building AI-driven projects and communities.
-        </p>
-        <a class="read-more" href="/blog/posts/dca-bitcoin-xrp-ai.html"
-          >Read more</a
-        >
-      </div>
+
+    <main class="container">
+      <h1 class="h">Blog</h1>
+      <p>My posts. Direct and useful.</p>
+      <input id="search" class="search" placeholder="Search posts…" />
+      <div id="tags" class="tag-filters"></div>
+      <ul id="post-list" class="post-list"></ul>
     </main>
-    <footer>
-      <p>&copy; 2025 Trent X Meta. All rights reserved.</p>
-      <div class="socials">
-        <a
-          href="https://twitter.com/TrentXMeta"
-          target="_blank"
-          rel="noopener"
-          aria-label="Twitter"
-          ><i class="fab fa-twitter"></i
-        ></a>
-        <a
-          href="https://instagram.com/TrentXMeta"
-          target="_blank"
-          rel="noopener"
-          aria-label="Instagram"
-          ><i class="fab fa-instagram"></i
-        ></a>
-        <a
-          href="https://reddit.com/u/TrentXMeta"
-          target="_blank"
-          rel="noopener"
-          aria-label="Reddit"
-          ><i class="fab fa-reddit"></i
-        ></a>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="socials">
+          <a href="https://twitter.com/TrentXMeta">Twitter</a>
+          <a href="https://instagram.com/TrentXMeta">Instagram</a>
+          <a href="https://www.reddit.com/user/Trentmeta">Reddit</a>
+          <a href="https://www.quora.com/profile/trentmeta">Quora</a>
+          <a href="https://medium.com/@trentmeta">Medium</a>
+        </div>
+        <div class="footer-mini">TRENTXMETA</div>
       </div>
     </footer>
-    <script src="/main.js"></script>
+
+    <script>
+      async function load() {
+        try {
+          const res = await fetch('/blog/posts/posts.json?_=' + Date.now());
+          const posts = await res.json();
+          const list = document.getElementById('post-list');
+          const searchInput = document.getElementById('search');
+          const tagsContainer = document.getElementById('tags');
+          let activeTag = '';
+          const tagSet = new Set();
+          posts.forEach(p => {
+            (p.tags || []).forEach(t => tagSet.add(t));
+          });
+          function renderTags() {
+            tagsContainer.innerHTML = '';
+            [...tagSet].sort().forEach(tag => {
+              const span = document.createElement('span');
+              span.className = 'tag' + (activeTag === tag ? ' selected' : '');
+              span.textContent = tag;
+              span.onclick = () => {
+                activeTag = activeTag === tag ? '' : tag;
+                render(searchInput.value.trim());
+                renderTags();
+              };
+              tagsContainer.appendChild(span);
+            });
+          }
+          function render(filter = '') {
+            list.innerHTML = '';
+            posts
+              .filter(post => {
+                const text = (post.title + ' ' + (post.summary || '') + ' ' + (post.tags || []).join(' ')).toLowerCase();
+                const matchesSearch = text.includes(filter.toLowerCase());
+                const matchesTag = !activeTag || (post.tags || []).includes(activeTag);
+                return matchesSearch && matchesTag;
+              })
+              .forEach(post => {
+                const li = document.createElement('li');
+                li.className = 'post-item';
+                li.innerHTML =
+                  '<a class="post-title" href="/blog/posts/' + post.file + '">' +
+                  post.title +
+                  '</a>' +
+                  '<p class="post-summary">' + (post.summary || '') + '</p>';
+                list.appendChild(li);
+              });
+          }
+          render();
+          renderTags();
+          searchInput.addEventListener('input', e => {
+            render(e.target.value.trim());
+          });
+        } catch (err) {
+          console.error('Error loading posts:', err);
+        }
+      }
+      load();
+    </script>
   </body>
 </html>
