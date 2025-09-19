@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>TrentXMeta Blog</title>
+    <link>https://trentxmeta.com/blog/</link>
+    <description>Latest posts from TrentXMeta on crypto, AI and web development</description>
+    <item>
+      <title>Exploring AI in Web Development</title>
+      <link>https://trentxmeta.com/blog/posts/ai-web-development.html</link>
+      <description><![CDATA[How artificial intelligence is changing the way we build and maintain websites.]]></description>
+      <pubDate>Mon, 15 Sep 2025 00:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>The Future of Crypto Communities</title>
+      <link>https://trentxmeta.com/blog/posts/future-of-crypto-communities.html</link>
+      <description><![CDATA[Trends and insights into how online communities around blockchain projects evolve.]]></description>
+      <pubDate>Tue, 02 Sep 2025 00:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Building Websites with AI Tools</title>
+      <link>https://trentxmeta.com/blog/posts/building-sites-with-ai.html</link>
+      <description><![CDATA[A practical guide to using artificial intelligence to design and launch beautiful websites.]]></description>
+      <pubDate>Fri, 22 Aug 2025 00:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

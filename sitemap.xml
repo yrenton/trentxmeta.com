@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap for Trent X Meta
+  Listing all pages on the site for search engines. Having a sitemap
+  improves discoverability and ensures crawlers can find your posts.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://trentxmeta.com/</loc>
+  </url>
+  <url>
+    <loc>https://trentxmeta.com/blog/</loc>
+  </url>
+  <url>
+    <loc>https://trentxmeta.com/blog/posts/ai-websites.html</loc>
+  </url>
+  <url>
+    <loc>https://trentxmeta.com/blog/posts/doginal-dogs.html</loc>
+  </url>
+  <url>
+    <loc>https://trentxmeta.com/blog/posts/crypto-memes.html</loc>
+  </url>
+</urlset>
