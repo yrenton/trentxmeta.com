@@ -1,21 +1,18 @@
-// Main JavaScript for Trent X Meta site
-// This script adds simple search functionality to the blog page.
-
+// Simple client-side search for the blog listing
 document.addEventListener('DOMContentLoaded', () => {
-  const search = document.getElementById('search');
-  const postList = document.getElementById('post-list');
-  if (search && postList) {
-    const posts = postList.querySelectorAll('li');
-    search.addEventListener('input', function () {
-      const filter = this.value.toLowerCase();
-      posts.forEach((post) => {
-        const text = post.textContent.toLowerCase();
-        if (text.includes(filter)) {
-          post.style.display = '';
-        } else {
-          post.style.display = 'none';
-        }
-      });
+  const searchInput = document.querySelector('#search');
+  if (!searchInput) return;
+  const posts = document.querySelectorAll('.post-item');
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    posts.forEach((post) => {
+      const title = post.querySelector('h2').textContent.toLowerCase();
+      const summary = post.querySelector('.summary').textContent.toLowerCase();
+      if (title.includes(query) || summary.includes(query)) {
+        post.style.display = '';
+      } else {
+        post.style.display = 'none';
+      }
     });
-  }
+  });
 });

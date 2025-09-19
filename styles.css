@@ -1,221 +1,228 @@
-/*
-  Stylesheet for Trent X Meta site
-  This file defines the overall look and feel of the website, using a dark
-  colour palette with vibrant accents. The layout is responsive so it
-  works across desktop and mobile devices. Semantic elements and
-  descriptive class names have been used for better readability and SEO.
-*/
-
-/* Colour variables */
-:root {
-  --bg-color: #0f1724;
-  --primary-color: #00bfff;
-  --secondary-color: #00ffc6;
-  --text-color: #f5f5f5;
-  --muted-color: #a0b3c0;
-}
-
+/* Reset & base styles */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  font-family: 'Segoe UI', 'Inter', sans-serif;
   line-height: 1.6;
+  color: #333;
+  background-color: #ffffff;
+}
+
+a {
+  color: #007acc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 header {
+  background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 20px 40px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-header .logo {
-  font-weight: bold;
+.logo {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  font-weight: 600;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 20px;
 }
 
 nav a {
-  margin-left: 1rem;
-  color: var(--text-color);
-  text-decoration: none;
-  font-weight: bold;
+  font-weight: 500;
+}
+
+.hero {
+  position: relative;
+  height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #333;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.8)
+    ),
+    url('background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-content {
+  max-width: 800px;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+.about {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 60px 40px;
+  background-color: #fafafa;
+}
+
+.about img {
+  width: 250px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.about-text {
+  flex: 1;
+  min-width: 300px;
+}
+
+.about-text h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.about-text p {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.blog-preview {
+  background-color: #ffffff;
+  padding: 60px 40px;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.blog-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.blog-container h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.blog-container p {
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+
+footer {
+  background-color: #fafafa;
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+footer p {
+  margin-bottom: 10px;
+  color: #777;
+}
+
+.socials {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.socials a {
+  font-size: 1.5rem;
+  color: #333;
   transition: color 0.2s ease;
 }
 
-nav a:hover,
-nav a:focus {
-  color: var(--primary-color);
+.socials a:hover {
+  color: #007acc;
 }
 
-/* Hero section */
-/* Hero section now uses a clean solid background instead of a busy image */
-.hero {
-  width: 100%;
-  height: 60vh;
-  background-color: var(--bg-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: var(--text-color);
-}
-
-/* Removed the overlay since there is no background image */
-.hero h1,
-.hero p {
-  position: relative;
-  margin: 0;
-  z-index: 1;
-}
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  color: var(--primary-color);
-}
-.hero p {
-  font-size: 1.2rem;
-  max-width: 600px;
-}
-
-main {
-  padding: 2rem;
-  max-width: 1000px;
+/* Blog page styles */
+.blog-list {
+  max-width: 900px;
   margin: 0 auto;
+  padding: 60px 40px;
 }
 
-/* About section */
-.about h2 {
-  margin-top: 0;
-  color: var(--primary-color);
-}
-.about p {
-  margin-bottom: 1rem;
-  color: var(--muted-color);
-}
-.about .socials {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.about .socials a {
-  color: var(--secondary-color);
-  text-decoration: none;
-  font-weight: bold;
-}
-.about .socials a:hover {
-  color: var(--primary-color);
-}
-
-/* Gallery grid */
-.gallery h2 {
-  color: var(--primary-color);
-}
-.gallery .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.gallery img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease;
-}
-.gallery img:hover {
-  transform: scale(1.03);
-}
-
-/* Footer */
-footer {
-  background-color: #051026;
-  padding: 1rem 2rem;
+.blog-list h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
   text-align: center;
-  font-size: 0.8rem;
-  color: var(--muted-color);
 }
 
-/* Blog listing */
-#post-list {
-  list-style: none;
-  padding: 0;
-  margin: 2rem 0;
-}
-#post-list li {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-#post-list li a {
-  color: var(--primary-color);
-  font-size: 1.2rem;
-  text-decoration: none;
-}
-#post-list li a:hover {
-  text-decoration: underline;
-}
-#post-list .meta {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--muted-color);
-  margin-top: 0.3rem;
+.blog-search {
+  margin-bottom: 30px;
+  text-align: center;
 }
 
-/* Search field */
-#search {
+.blog-search input[type='search'] {
   width: 100%;
-  padding: 0.5rem;
-  border: none;
+  max-width: 400px;
+  padding: 12px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  margin-top: 1rem;
   font-size: 1rem;
-  color: var(--bg-color);
 }
 
-/* Blog post page */
-article {
-  max-width: 800px;
-  margin: 2rem auto;
+.post-item {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 20px 0;
 }
-article h1 {
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
+
+.post-item:last-child {
+  border-bottom: none;
 }
-article .date {
-  font-size: 0.9rem;
-  color: var(--muted-color);
-  margin-bottom: 1rem;
+
+.post-item h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
 }
-article p {
-  margin-bottom: 1rem;
-  color: var(--muted-color);
+
+.post-item p {
+  color: #555;
+  margin-bottom: 10px;
 }
-article img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+
+.post-item .read-more {
+  color: #007acc;
+  font-weight: 500;
 }
-.post-footer a {
-  color: var(--secondary-color);
-  text-decoration: none;
-}
-.post-footer a:hover {
-  color: var(--primary-color);
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .about {
+    padding: 40px 20px;
+  }
+  .blog-preview {
+    padding: 40px 20px;
+  }
+  .blog-list {
+    padding: 40px 20px;
+  }
 }
