@@ -1,339 +1,60 @@
-/* Base resets */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+:root{
+  --bg:#0B0F19;
+  --text:#E6E6E6;
+  --muted:#A5B4C3;
+  --card:#0F1523;
+  --line:#1F2937;
+  --accent:#4F46E5;
 }
 
-html,
-body {
-  height: 100%;
-}
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial, sans-serif;
-  color: #1d1d1f;
-  /* Use a warm pale yellow for the page background below the hero */
-  background: #f8fbff;
-  line-height: 1.6;
-}
-
-/* Main container background: pale yellow matching the Doginal Dogs palette */
-main {
-  background: #F7E7A3;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
 
-a {
-  color: #0b63c4;
-  text-decoration: none;
+.wrap{width:100%;max-width:780px;margin:0 auto;padding:0 20px}
+.site-header{
+  position:sticky;top:0;z-index:10;
+  backdrop-filter:saturate(180%) blur(8px);
+  background:rgba(11,15,25,.7);
+  border-bottom:1px solid var(--line);
 }
-a:hover {
-  text-decoration: underline;
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-weight:800;letter-spacing:.5px;color:var(--text);text-decoration:none}
+.nav a{color:var(--text);text-decoration:none;margin-left:16px;opacity:.9}
+.nav a.active{opacity:1}
+.btn{
+  padding:8px 14px;border-radius:10px;border:1px solid var(--accent);
+  color:var(--text);text-decoration:none;
+  transition:.2s background;
 }
+.btn:hover{background:rgba(79,70,229,.15)}
+.btn-lg{display:inline-block;margin-top:8px;padding:12px 18px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none}
 
-/* Containers */
-.container {
-  width: min(1100px, 92%);
-  margin: 0 auto;
-}
+.hero{padding:56px 0 12px}
+.hero h1{font-size:42px;letter-spacing:.5px;margin:0 0 6px}
+.lead{color:var(--muted);margin-top:6px}
 
-/* Header */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: saturate(160%) blur(8px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-/* Brand wrapper for dog + name */
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  color: #1d1d1f;
-}
-.brand img {
-  height: 28px;
-  width: auto;
-  image-rendering: pixelated;
-}
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-}
-.logo {
-  font-weight: 800;
-  font-size: 1.4rem;
-  letter-spacing: 0.5px;
-}
-.nav a {
-  margin-left: 16px;
-  font-weight: 500;
-}
-.nav a.active {
-  font-weight: 700;
-}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px}
+.chip{background:var(--card);color:var(--text);border:1px solid var(--line);padding:10px 12px;border-radius:999px}
 
-/* Contact button style in nav */
-.nav .btn {
-  margin-left: 16px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  background: #6EC1FF;
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  transition: filter 0.2s ease;
-}
-.nav .btn:hover {
-  filter: brightness(0.95);
-}
+.cards{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:720px){.cards{grid-template-columns:1fr 1fr}}
 
-/* Hero with pastel background */
-.hero--pattern {
-  --overlay: rgba(255, 255, 255, 0.55);
-  background: linear-gradient(var(--overlay), var(--overlay)), url('/background.jpg') center/cover no-repeat fixed;
-}
-.hero-inner {
-  text-align: center;
-  padding: 72px 0 64px;
-}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.card h2{margin:0 0 6px}
+.card p{margin:0;color:var(--muted)}
 
-/* Section containers with light translucent background */
-section.slim {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: saturate(110%) blur(2px);
-  border-radius: 12px;
-  padding: 32px;
-  margin: 48px 0;
-}
-
-.hero-title {
-  font-size: 44px;
-  font-weight: 900;
-  margin-bottom: 10px;
-}
-.hero-sub {
-  font-size: 18px;
-  opacity: 0.85;
-}
-
-/* Section spacing */
-.slim {
-  margin: 48px 0;
-}
-.h {
-  font-size: 28px;
-  margin: 0 0 12px;
-  font-weight: 700;
-}
-
-/* Pill list */
-.pill-list {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 0;
-}
-.pill-list li {
-  background: #eaf3ff;
-  border: 1px solid #d6e7ff;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-size: 14px;
-}
-
-/* Grid and cards */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-@media (min-width: 740px) {
-  .grid-2 {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.card {
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 6px 22px rgba(10, 30, 60, 0.05);
-}
-.card h3 {
-  margin: 0 0 6px;
-  font-size: 20px;
-  font-weight: 700;
-}
-.card p {
-  margin: 0;
-  color: #4a4f57;
-  font-size: 15px;
-}
-
-/* Blog preview button */
-.btn {
-  display: inline-block;
-  background: #0b63c4;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
-.btn:hover {
-  background: #0953a0;
-}
-
-/* Blog page styles */
-.search {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #dfe6ee;
-  margin: 8px 0 18px;
-}
-.post-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 18px;
-}
-.post-item {
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 12px;
-  padding: 16px;
-}
-.post-title {
-  color: #0b63c4;
-  font-weight: 800;
-  text-decoration: none;
-  display: block;
-  margin-bottom: 6px;
-  font-size: 18px;
-}
-.post-summary {
-  margin: 0;
-  color: #4a4f57;
-  font-size: 14px;
-}
-
-/* Single post */
-.post h1 {
-  margin: 6px 0 12px;
-  font-size: 32px;
-}
-
-/* Contact form */
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 640px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #eef2f7;
-}
-.contact-form label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 600;
-  font-size: 15px;
-  color: #1d1d1f;
-}
-.contact-form input,
-.contact-form textarea {
-  margin-top: 6px;
-  padding: 10px 12px;
-  border: 1px solid #dfe6ee;
-  border-radius: 8px;
-  font-size: 15px;
-  color: #1d1d1f;
-}
-.contact-form textarea {
-  resize: vertical;
-}
-.contact-form button {
-  align-self: flex-start;
-  background: #6EC1FF;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: filter 0.2s ease;
-}
-.contact-form button:hover {
-  filter: brightness(0.95);
-}
-.agree {
-  font-size: 14px;
-}
-.hidden {
-  display: none;
-}
-
-/* Footer */
-.site-footer {
-  margin-top: 48px;
-  border-top: 1px solid #eef2f7;
-  background: #fff;
-}
-.footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 16px 0;
-}
-.socials {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.socials a {
-  color: #0b63c4;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-}
-.footer-mini {
-  opacity: 0.7;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-/* Tag filters on blog index */
-.tag-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 10px 0 20px;
-}
-.tag {
-  background: #eaf3ff;
-  border: 1px solid #d6e7ff;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.tag.selected {
-  background: #0b63c4;
-  color: #fff;
-  border-color: #0b63c4;
-}
+.cta{text-align:left}
+.site-footer{border-top:1px solid var(--line);margin-top:40px}
+.site-footer .wrap{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+.links a{color:var(--muted);text-decoration:none;margin-right:14px}
+.brand-small{color:var(--muted)}
+.list .post{display:block;padding:12px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+.list .post:last-child{border-bottom:none}
