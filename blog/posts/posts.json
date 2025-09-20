@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Welcome",
+    "summary": "Who I am, what I do, how this blog works.",
+    "file": "welcome.html",
+    "tags": ["intro"]
+  },
+  {
+    "title": "DCA, AI and Marketing",
+    "summary": "How I DCA into Bitcoin & XRP and work on AI and marketing separately.",
+    "file": "dca-bitcoin-xrp-ai.html",
+    "tags": ["DCA", "AI", "Marketing", "Crypto"]
+  }
+]
