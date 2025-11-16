@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Mood Painter – TrentXMeta</title>
-  <link rel="stylesheet" href="ai.css">
-</head>
-<body>
-  <div class="container">
-    <h1>AI Mood Painter</h1>
-    <p>Describe your mood today and watch it turn into art.</p>
-    <form id="mood-form">
-      <input type="text" id="mood-input" placeholder="Describe your mood" required>
-      <button type="submit">Generate Painting</button>
-    </form>
-    <div id="loading" style="display:none;">Generating...</div>
-    <div class="result">
-      <img id="result-image" alt="Generated Painting">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Literal Visualization</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Describe Your Mood</h1>
+      <p class="subtitle">
+        Type a word or phrase below and watch it transform into abstract art.
+      </p>
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="moodInput"
+          placeholder="e.g. crimson rage, calm ocean, neon cyberdog"
+        />
+        <button id="generateButton">Generate</button>
+      </div>
+      <canvas id="artCanvas" width="800" height="600"></canvas>
+      <p id="placeholderText">Your art will appear here.</p>
     </div>
-  </div>
-  <footer>Made by TrentXMeta • AI art via random imaging</footer>
-  <script src="ai.js"></script>
-</body>
+
+    <script src="script.js"></script>
+  </body>
 </html>
