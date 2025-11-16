@@ -1,33 +1,41 @@
+// AI Mood Painter script using Picsum Photos to generate unique images based on mood and timestamp
+
 document.getElementById('mood-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const moodInput = document.getElementById('mood-input');
-    const mood = moodInput.value.trim();
-    const loadingEl = document.getElementById('loading');
-    const resultImg = document.getElementById('result-image');
+  e.preventDefault();
+  const moodInput = document.getElementById('mood-input');
+  const mood = moodInput.value.trim();
+  const loadingEl = document.getElementById('loading');
+  const resultImg = document.getElementById('result-image');
 
-    if (!mood) {
-        loadingEl.textContent = 'Please describe your mood.';
-        loadingEl.style.display = 'block';
-        resultImg.src = '';
-        return;
-    }
-
+  // If no mood description is provided, prompt the user and exit
+  if (!mood) {
+    loadingEl.textContent = 'Please describe your mood.';
     loadingEl.style.display = 'block';
-    loadingEl.textContent = 'Generating...';
     resultImg.src = '';
+    return;
+  }
 
-    const encodedMood = encodeURIComponent(mood);
-    const randomSeed = Date.now().toString();
-    // Use loremflickr to generate a unique art painting based on the mood
-    const imageUrl = `https://loremflickr.com/800/600/${encodedMood},art,painting?random=${randomSeed}`;
+  // Show a loading message while the image is being fetched
+  loadingEl.style.display = 'block';
+  loadingEl.textContent = 'Generating...';
+  resultImg.src = '';
 
-    resultImg.onload = function() {
-        loadingEl.style.display = 'none';
-    };
-    resultImg.onerror = function() {
-        loadingEl.style.display = 'block';
-        loadingEl.textContent = 'Failed to generate image. Please try again.';
-    };
+  // Generate a unique seed by combining the mood with the current timestamp
+  const seed = encodeURIComponent(`${mood}-${Date.now()}`);
+  // Construct the image URL using Picsum Photos with the unique seed
+  const imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
 
-    resultImg.src = imageUrl;
+  // When the image loads successfully, hide the loading message
+  resultImg.onload = function() {
+    loadingEl.style.display = 'none';
+  };
+
+  // If there is an error loading the image, show an error message
+  resultImg.onerror = function() {
+    loadingEl.textContent = 'Failed to generate image. Please try again.';
+    loadingEl.style.display = 'block';
+  };
+
+  // Trigger the image load by setting the src attribute
+  resultImg.src = imageUrl;
 });
