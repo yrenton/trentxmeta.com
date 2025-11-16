@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Mood Painter – TrentXMeta</title>
+  <!-- Link to external stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>AI Mood Painter</h1>
+    <p class="subtitle">Describe your mood today and watch AI paint it.</p>
+    <textarea id="mood-input" placeholder="Describe your mood today..." rows="3"></textarea>
+    <button id="generate-btn">Generate Painting</button>
+    <div id="status"></div>
+    <div id="image-container" class="hidden">
+      <img id="generated-image" alt="Generated Painting" />
+    </div>
+  </div>
+  <footer>
+    Powered by <a href="https://trentxmeta.com" target="_blank" rel="noopener">TrentXMeta</a> • AI art via DeepAI API
+  </footer>
+  <!-- Include the script at the end of the body for faster page load -->
+  <script src="script.js"></script>
+</body>
+</html>
