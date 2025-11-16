@@ -1,78 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TRENTXMETA — Marketing. AI. DCA. I build.</title>
-  <meta name="description" content="Marketing. AI. DCA. I build. Clean sites, bots and automations—fast." />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="/assets/favicon.png" />
-  <link rel="stylesheet" href="/styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Mood Painter – TrentXMeta</title>
+  <link rel="stylesheet" href="ai.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <a class="brand" href="/">TREN<img src="/assets/txm-dog.png" class="logo-icon" alt="Dog icon" /> TXMETA</a>
-      <nav class="nav">
-        <a href="/">Home</a>
-        <a href="/blog.html">Blog</a>
-        <a class="btn" href="https://twitter.com/TrentXMeta" target="_blank" rel="noopener">Contact</a>
-      </nav>
+  <div class="container">
+    <h1>AI Mood Painter</h1>
+    <p>Describe your mood today and watch it turn into art.</p>
+    <form id="mood-form">
+      <input type="text" id="mood-input" placeholder="Describe your mood" required>
+      <button type="submit">Generate Painting</button>
+    </form>
+    <div id="loading" style="display:none;">Generating...</div>
+    <div class="result">
+      <img id="result-image" alt="Generated Painting">
     </div>
-  </header>
-
-  <main class="wrap">
-    <section class="hero">
-      <h1>TRENTXMETA</h1>
-      <p class="lead">Marketing. AI. DCA. I build.</p>
-    </section>
-
-    <section class="chips">
-      <span class="chip">AI (no fluff)</span>
-      <span class="chip">Marketing</span>
-      <span class="chip">DCA into Bitcoin &amp; XRP</span>
-      <span class="chip">Websites &amp; automations built clean and fast</span>
-      <span class="chip">I like to build — simple as that</span>
-    </section>
-
-    <section class="cards">
-      <article class="card">
-        <h2>AI</h2>
-        <p>Tools and systems that save time and deliver results.</p>
-      </article>
-      <article class="card">
-        <h2>Marketing</h2>
-        <p>Traffic, funnels and growth — no fluff.</p>
-      </article>
-      <article class="card">
-        <h2>DCA &amp; Crypto</h2>
-        <p>Steady moves into Bitcoin &amp; XRP — conviction and patience.</p>
-      </article>
-      <article class="card">
-        <h2>Build &amp; Automate</h2>
-        <p>Clean sites, blogs, bots and automations built fast.</p>
-      </article>
-    </section>
-
-    <section class="cta card">
-      <h2>Latest from the Blog</h2>
-      <p>My posts — short, direct. No filler.</p>
-      <a class="btn-lg" href="/blog.html">Open the blog</a>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="wrap">
-      <nav class="links">
-        <a href="https://twitter.com/TrentXMeta" target="_blank" rel="noopener">Twitter</a>
-        <a href="https://instagram.com/TrentXMeta" target="_blank" rel="noopener">Instagram</a>
-        <a href="https://reddit.com" target="_blank" rel="noopener">Reddit</a>
-        <a href="https://quora.com" target="_blank" rel="noopener">Quora</a>
-        <a href="https://medium.com" target="_blank" rel="noopener">Medium</a>
-      </nav>
-      <div class="brand-small">TRENTXMETA</div>
-    </div>
-  </footer>
+  </div>
+  <footer>Made by TrentXMeta • AI art via random imaging</footer>
+  <script src="ai.js"></script>
 </body>
 </html>
