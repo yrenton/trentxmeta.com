@@ -1,0 +1,84 @@
+/*
+ * Styles for the AI Literal Visualization site.
+ *
+ * This stylesheet defines a dark themed layout with a centered container.
+ */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #0f0f0f;
+  color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 900px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 0.3em;
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin-top: 0;
+  margin-bottom: 1.5em;
+  font-size: 1rem;
+  color: #a0a0a0;
+}
+
+.input-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+#moodInput {
+  flex: 1 1 300px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #1f1f1f;
+  color: #e5e5e5;
+  font-size: 1rem;
+}
+
+#generateButton {
+  padding: 0.75rem 1.5rem;
+  background: #00aaff;
+  border: none;
+  border-radius: 0.5rem;
+  color: #0f0f0f;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#generateButton:hover {
+  background: #0088cc;
+}
+
+canvas {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+}
+
+#placeholderText {
+  margin-top: 2rem;
+  font-size: 1rem;
+  color: #666;
+}
