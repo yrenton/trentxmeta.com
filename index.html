@@ -1,67 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Rank - TrentXMeta</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #0A192F; color: #E5E7EB; margin: 0; padding: 20px; text-align: center; }
-    h1 { color: #64ffda; }
-    #inputWrapper { margin-top: 40px; }
-    input { padding: 10px; font-size: 1.2rem; width: 250px; border-radius: 4px; border: none; }
-    button { padding: 10px 20px; font-size: 1.2rem; margin-left: 10px; border: none; border-radius: 4px; background: #64ffda; color: #0A192F; cursor: pointer; }
-    button:hover { opacity: 0.9; }
-    #results { margin-top: 30px; font-size: 1.1rem; }
-    .stat { margin: 10px 0; }
-    .highlight { font-size: 2rem; color: #64ffda; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Rank - TrentXMeta</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0A192F; color: #E7EB; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #64ffda; }
+        #inputWrapper { margin-top: 40px; }
+        input { padding: 10px; font-size: 1.2rem; width: 250px; border-radius: 4px; border: none; }
+        button { padding: 10px 20px; font-size: 1.2rem; margin-left: 10px; border: none; border-radius: 4px; background: #64ffda; color: #0A192F; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+        #results { margin-top: 30px; font-size: 1.1rem; }
+        .stat { margin: 10px 0; }
+        .highlight { font-size: 2rem; color: #64ffda; }
+    </style>
 </head>
 <body>
-  <h1>Creator Rank</h1>
-  <p>Enter your Twitter handle to see your global rank</p>
-  <div id="inputWrapper">
-    <input type="text" id="handleInput" placeholder="@username">
-    <button id="checkBtn">Check Rank</button>
-  </div>
-  <div id="results"></div>
-
-  <script>
-    document.getElementById('checkBtn').addEventListener('click', async function() {
-      const handle = document.getElementById('handleInput').value.trim().replace(/^@/, '');
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = 'Loading...';
-      if(!handle) {
-        resultsDiv.innerHTML = 'Please enter a Twitter handle.';
-        return;
-      }
-      try {
-        // Fetch public follower count from Twitter followbutton endpoint
-        const response = await fetch('https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names=' + encodeURIComponent(handle));
-        if(!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        if(!data || !data[0]) throw new Error('User not found');
-        const followers = data[0].followers_count || 0;
-        // Compute score based on followers (simple model)
-        const totalCreators = 10000000;
-        // normalize followers to a 0-1 scale; assume 1M followers equates to top rank
-        let scoreRaw = followers / 1000000;
-        if(scoreRaw > 1) scoreRaw = 1;
-        const score = (scoreRaw * 100).toFixed(1);
-        const globalRank = Math.floor(totalCreators - scoreRaw * totalCreators) + 1;
-        const percentile = (100 - (globalRank / totalCreators * 100)).toFixed(2);
-
-        resultsDiv.innerHTML = `
-          <div class="stat highlight">#${globalRank.toLocaleString()} <span style="font-size:1rem;">out of 10,000,000</span></div>
-          <div class="stat">Percentile: Top ${percentile}%</div>
-          <div class="stat">Creator Score: ${score}/100</div>
-          <div class="stat">Followers: ${followers.toLocaleString()}</div>
-          <div class="stat">Note: Ranking is estimated using public follower counts.</div>
-        `;
-      } catch(err) {
-        console.error(err);
-        resultsDiv.innerHTML = 'Sorry, we could not retrieve data for @' + handle + '.';
-      }
-    });
-  </script>
+    <h1>Creator Rank</h1>
+    <p>Enter your Twitter handle to see your global rank</p>
+    <div id="inputWrapper">
+        <input type="text" id="handleInput" placeholder="@username">
+        <button id="checkBtn">Check Rank</button>
+    </div>
+    <div id="results"></div>
+    <script>
+        document.getElementById('checkBtn').addEventListener('click', async function() {
+            const handle = document.getElementById('handleInput').value.trim().replace(/^@/, '');
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Loading...';
+            if(!handle) {
+                resultsDiv.innerHTML = 'Please enter a Twitter handle.';
+                return;
+            }
+            try {
+                // Fetch public follower count using AllOrigins to bypass CORS
+                const apiUrl = 'https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names=' + encodeURIComponent(handle);
+                const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(apiUrl));
+                if(!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                if(!data || !data[0]) throw new Error('User not found');
+                const followers = data[0].followers_count || 0;
+                // Compute score based on followers (simple model)
+                const totalCreators = 10000000;
+                let scoreRaw = followers / 1000000;
+                if(scoreRaw > 1) scoreRaw = 1;
+                const score = (scoreRaw * 100).toFixed(1);
+                const globalRank = Math.floor(totalCreators - scoreRaw * totalCreators) + 1;
+                const percentile = (100 - (globalRank / totalCreators * 100)).toFixed(2);
+                resultsDiv.innerHTML = `
+                    <div class="stat highlight">#${globalRank.toLocaleString()} <span style="font-size:1rem;">out of 10,000,000</span></div>
+                    <div class="stat">Percentile: Top ${percentile}%</div>
+                    <div class="stat">Creator Score: ${score}/100</div>
+                    <div class="stat">Followers: ${followers.toLocaleString()}</div>
+                    <div class="stat">Note: Ranking is estimated using public follower counts.</div>
+                `;
+            } catch(err) {
+                console.error(err);
+                resultsDiv.innerHTML = 'Sorry, we could not retrieve data for @' + handle + '.';
+            }
+        });
+    </script>
 </body>
 </html>
