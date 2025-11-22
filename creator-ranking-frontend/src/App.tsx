@@ -37,7 +37,7 @@ function App() {
     e.preventDefault()
     
     if (!handle.trim()) {
-      setError('Please enter a Twitter handle')
+      setError('Please enter a Mastodon handle')
       return
     }
 
@@ -94,7 +94,7 @@ function App() {
           <CardHeader>
             <CardTitle className="text-2xl">Check Your Ranking</CardTitle>
             <CardDescription>
-              Enter your Twitter handle to see your global creator rank
+              Enter your Mastodon handle (e.g., username@mastodon.social) to see your global creator rank
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,7 +105,7 @@ function App() {
                 </span>
                 <Input
                   type="text"
-                  placeholder="username"
+                  placeholder="username@mastodon.social"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value)}
                   className="pl-8 text-lg h-12"

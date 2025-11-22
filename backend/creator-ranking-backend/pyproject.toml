@@ -12,6 +12,7 @@ psycopg = {extras = ["binary"], version = "^3.2.13"}
 httpx = "^0.28.1"
 beautifulsoup4 = "^4.14.2"
 lxml = "^6.0.2"
+selenium = "^4.38.0"
 
 
 [build-system]
