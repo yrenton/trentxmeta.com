@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import re
 from typing import Optional
 import asyncio
+import json
 
 app = FastAPI()
 
@@ -18,20 +19,20 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# List of Nitter instances to try (fallback mirrors)
-NITTER_INSTANCES = [
-    "https://nitter.net",
-    "https://nitter.poast.org",
-    "https://nitter.privacydev.net",
-    "https://nitter.unixfox.eu",
-    "https://nitter.1d4.us",
-    "https://nitter.cz",
-    "https://nitter.fdn.fr",
-    "https://nitter.kavin.rocks",
+# List of Mastodon instances to try (popular Fediverse servers)
+MASTODON_INSTANCES = [
+    "https://mastodon.social",
+    "https://mstdn.social",
+    "https://mastodon.online",
+    "https://fosstodon.org",
+    "https://mas.to",
+    "https://techhub.social",
+    "https://mastodon.world",
+    "https://infosec.exchange",
 ]
 
-# Enable demo mode when Nitter instances are unavailable
-DEMO_MODE = True
+# Disable demo mode - we're using real Mastodon data now
+DEMO_MODE = False
 
 # In-memory storage for rankings (will be lost on restart)
 user_rankings = {}
@@ -70,62 +71,67 @@ def generate_demo_stats(handle: str) -> dict:
         'impressions': base_impressions
     }
 
-async def fetch_twitter_stats(handle: str) -> dict:
+async def fetch_mastodon_stats(handle: str) -> dict:
     """
-    Fetch Twitter stats from Nitter instances with fallback support.
-    Returns: dict with followers, following, tweets, impressions
+    Fetch creator stats from Mastodon/Fediverse instances.
+    Accepts handles in format: username@instance.social or just username
+    Returns: dict with followers, following, tweets (posts), impressions
     """
     # Remove @ if present
     handle = handle.lstrip('@')
     
-    # If demo mode is enabled, try Nitter first but fall back to demo data
-    if not DEMO_MODE:
-        for instance in NITTER_INSTANCES:
-            try:
-                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                    url = f"{instance}/{handle}"
-                    response = await client.get(url)
-                    
-                    if response.status_code == 200:
-                        soup = BeautifulSoup(response.text, 'lxml')
-                        
-                        # Extract stats from profile
-                        stats = {}
-                        
-                        # Find stats in the profile stats section
-                        stats_items = soup.find_all('span', class_='profile-stat-num')
-                        
-                        if len(stats_items) >= 3:
-                            # Parse tweets count
-                            tweets_text = stats_items[0].get_text(strip=True)
-                            stats['tweets'] = parse_number(tweets_text)
-                            
-                            # Parse following count
-                            following_text = stats_items[1].get_text(strip=True)
-                            stats['following'] = parse_number(following_text)
-                            
-                            # Parse followers count
-                            followers_text = stats_items[2].get_text(strip=True)
-                            stats['followers'] = parse_number(followers_text)
-                        else:
-                            # Fallback: try to find stats by label
-                            stats['tweets'] = extract_stat_by_label(soup, 'Tweets')
-                            stats['following'] = extract_stat_by_label(soup, 'Following')
-                            stats['followers'] = extract_stat_by_label(soup, 'Followers')
-                        
-                        # Estimate impressions from recent tweets
-                        stats['impressions'] = await estimate_impressions(soup, instance, handle, client)
-                        
-                        # Validate we got all required stats
-                        if all(key in stats and stats[key] is not None and stats[key] > 0 for key in ['tweets', 'following', 'followers']):
-                            return stats
-                            
-            except Exception as e:
-                print(f"Failed to fetch from {instance}: {str(e)}")
-                continue
+    # Parse handle - check if it includes instance
+    if '@' in handle:
+        username, instance_domain = handle.split('@', 1)
+        instances_to_try = [f"https://{instance_domain}"]
+    else:
+        # If no instance specified, try popular instances
+        username = handle
+        instances_to_try = MASTODON_INSTANCES
     
-    # If all instances failed or demo mode is enabled, use demo data
-    print(f"Using demo data for @{handle}")
+    # Try to fetch from Mastodon instances
+    for instance in instances_to_try:
+        try:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                # Use Mastodon's public API to lookup account
+                url = f"{instance}/api/v1/accounts/lookup"
+                params = {"acct": username}
+                
+                response = await client.get(url, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Extract real stats from Mastodon API
+                    followers = data.get('followers_count', 0)
+                    following = data.get('following_count', 0)
+                    posts = data.get('statuses_count', 0)
+                    
+                    # Estimate impressions based on followers and post activity
+                    # Formula: followers * average engagement rate * posts
+                    # Assuming 5-10% engagement rate
+                    engagement_factor = 0.075  # 7.5% average
+                    impressions = int(followers * engagement_factor * min(posts, 100))
+                    impressions = max(impressions, followers)  # At least as many as followers
+                    
+                    stats = {
+                        'followers': followers,
+                        'following': following,
+                        'tweets': posts,  # Using 'tweets' key for consistency with frontend
+                        'impressions': impressions
+                    }
+                    
+                    # Validate we got valid stats
+                    if followers > 0 or posts > 0:
+                        print(f"Found real Mastodon data for @{handle} on {instance}")
+                        return stats
+                        
+        except Exception as e:
+            print(f"Failed to fetch from {instance}: {str(e)}")
+            continue
+    
+    # If all instances failed, use demo data as fallback
+    print(f"Could not find @{handle} on any Mastodon instance, using demo data")
     return generate_demo_stats(handle)
 
 def parse_number(text: str) -> int:
@@ -262,11 +268,12 @@ async def healthz():
 async def get_rank(request: RankRequest):
     """
     Main endpoint to get creator ranking.
-    Accepts Twitter handle and returns stats + global rank.
+    Accepts Mastodon/Fediverse handle and returns stats + global rank.
+    Handles can be in format: username@instance.social or just username
     """
     try:
-        # Fetch Twitter stats
-        stats = await fetch_twitter_stats(request.handle)
+        # Fetch Mastodon stats (real data from Fediverse)
+        stats = await fetch_mastodon_stats(request.handle)
         
         # Calculate score
         score = calculate_score(
