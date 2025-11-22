@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd creator-ranking-frontend && npm install && npm run build",
+  "outputDirectory": "creator-ranking-frontend/dist",
+  "installCommand": "cd creator-ranking-frontend && npm install"
+}
