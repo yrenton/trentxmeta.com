@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://trentxmeta.com/sitemap.xml
