@@ -18,20 +18,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# List of Nitter instances to try (fallback mirrors)
-NITTER_INSTANCES = [
-    "https://nitter.net",
-    "https://nitter.poast.org",
-    "https://nitter.privacydev.net",
-    "https://nitter.unixfox.eu",
-    "https://nitter.1d4.us",
-    "https://nitter.cz",
-    "https://nitter.fdn.fr",
-    "https://nitter.kavin.rocks",
-]
+# Use xcancel.com for Twitter data (works without Cloudflare blocking)
+XCANCEL_BASE_URL = "https://xcancel.com"
 
-# Enable demo mode when Nitter instances are unavailable
-DEMO_MODE = True
+# Disable demo mode - we're using real Twitter data from xcancel.com
+DEMO_MODE = False
 
 # In-memory storage for rankings (will be lost on restart)
 user_rankings = {}
@@ -72,59 +63,59 @@ def generate_demo_stats(handle: str) -> dict:
 
 async def fetch_twitter_stats(handle: str) -> dict:
     """
-    Fetch Twitter stats from Nitter instances with fallback support.
+    Fetch Twitter stats from xcancel.com (Twitter viewer without Cloudflare blocking).
     Returns: dict with followers, following, tweets, impressions
     """
     # Remove @ if present
     handle = handle.lstrip('@')
     
-    # If demo mode is enabled, try Nitter first but fall back to demo data
+    # Try to fetch from xcancel.com
     if not DEMO_MODE:
-        for instance in NITTER_INSTANCES:
-            try:
-                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                    url = f"{instance}/{handle}"
-                    response = await client.get(url)
+        try:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                url = f"{XCANCEL_BASE_URL}/{handle}"
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                response = await client.get(url, headers=headers)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
                     
-                    if response.status_code == 200:
-                        soup = BeautifulSoup(response.text, 'lxml')
+                    # Extract stats from profile
+                    stats = {}
+                    
+                    # Find stats in the profile stats section
+                    # xcancel.com uses: <span class="profile-stat-num">229,254,173</span>
+                    stats_items = soup.find_all('span', class_='profile-stat-num')
+                    
+                    if len(stats_items) >= 3:
+                        # Parse tweets count (first stat)
+                        tweets_text = stats_items[0].get_text(strip=True)
+                        stats['tweets'] = parse_number(tweets_text)
                         
-                        # Extract stats from profile
-                        stats = {}
+                        # Parse following count (second stat)
+                        following_text = stats_items[1].get_text(strip=True)
+                        stats['following'] = parse_number(following_text)
                         
-                        # Find stats in the profile stats section
-                        stats_items = soup.find_all('span', class_='profile-stat-num')
-                        
-                        if len(stats_items) >= 3:
-                            # Parse tweets count
-                            tweets_text = stats_items[0].get_text(strip=True)
-                            stats['tweets'] = parse_number(tweets_text)
-                            
-                            # Parse following count
-                            following_text = stats_items[1].get_text(strip=True)
-                            stats['following'] = parse_number(following_text)
-                            
-                            # Parse followers count
-                            followers_text = stats_items[2].get_text(strip=True)
-                            stats['followers'] = parse_number(followers_text)
-                        else:
-                            # Fallback: try to find stats by label
-                            stats['tweets'] = extract_stat_by_label(soup, 'Tweets')
-                            stats['following'] = extract_stat_by_label(soup, 'Following')
-                            stats['followers'] = extract_stat_by_label(soup, 'Followers')
+                        # Parse followers count (third stat)
+                        followers_text = stats_items[2].get_text(strip=True)
+                        stats['followers'] = parse_number(followers_text)
                         
                         # Estimate impressions from recent tweets
-                        stats['impressions'] = await estimate_impressions(soup, instance, handle, client)
+                        stats['impressions'] = await estimate_impressions(soup, XCANCEL_BASE_URL, handle, client)
                         
                         # Validate we got all required stats
                         if all(key in stats and stats[key] is not None and stats[key] > 0 for key in ['tweets', 'following', 'followers']):
+                            print(f"Found real Twitter data for @{handle} from xcancel.com")
                             return stats
-                            
-            except Exception as e:
-                print(f"Failed to fetch from {instance}: {str(e)}")
-                continue
+                    else:
+                        print(f"Could not find stats for @{handle} on xcancel.com")
+                        
+        except Exception as e:
+            print(f"Failed to fetch from xcancel.com: {str(e)}")
     
-    # If all instances failed or demo mode is enabled, use demo data
+    # If xcancel.com failed or demo mode is enabled, use demo data
     print(f"Using demo data for @{handle}")
     return generate_demo_stats(handle)
 
