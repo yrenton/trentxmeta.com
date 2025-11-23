@@ -1,0 +1,5 @@
+fastapi[standard]==0.121.3
+psycopg[binary]==3.2.13
+httpx==0.28.1
+beautifulsoup4==4.14.2
+lxml==6.0.2
