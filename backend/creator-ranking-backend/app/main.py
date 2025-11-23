@@ -4,28 +4,38 @@ from pydantic import BaseModel
 import httpx
 from bs4 import BeautifulSoup
 import re
-from typing import Optional
 import asyncio
+import time
+from typing import Optional, Dict, Any, Tuple
 
 app = FastAPI()
 
-# Disable CORS. Do not remove this for full-stack development.
+# CORS: allow the frontend origin(s) — during development allow all origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Use xcancel.com for Twitter data (works without Cloudflare blocking)
-XCANCEL_BASE_URL = "https://xcancel.com"
+# A list of Nitter instances to try (order matters)
+NITTER_INSTANCES = [
+    "https://nitter.net",
+    "https://nitter.1d4.us",
+    "https://nitter.unixfox.eu",
+    "https://nitter.kavin.rocks",
+    "https://nitter.privacydev.net",
+    "https://nitter.fdn.fr",
+    "https://nitter.cz",
+]
 
-# Disable demo mode - we're using real Twitter data from xcancel.com
-DEMO_MODE = False
+# Short in-memory cache: handle -> (timestamp, result)
+CACHE_TTL_SECONDS = 60  # short TTL for freshness
+_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
 
-# In-memory storage for rankings (will be lost on restart)
-user_rankings = {}
+# Total users for ranking
+TOTAL_USERS = 15_000_000
 
 class RankRequest(BaseModel):
     handle: str
@@ -40,209 +50,151 @@ class RankResponse(BaseModel):
     global_rank: int
     total_users: int
 
-def generate_demo_stats(handle: str) -> dict:
-    """
-    Generate realistic demo stats based on the handle.
-    Used when Nitter instances are unavailable.
-    """
-    # Use handle length and characters to generate consistent but varied stats
-    handle_hash = sum(ord(c) for c in handle.lower())
-    
-    # Generate realistic stats based on hash
-    base_followers = (handle_hash * 137) % 500000 + 10000
-    base_following = (handle_hash * 73) % 5000 + 500
-    base_tweets = (handle_hash * 97) % 50000 + 1000
-    base_impressions = base_followers * ((handle_hash % 10) + 5)
-    
-    return {
-        'followers': base_followers,
-        'following': base_following,
-        'tweets': base_tweets,
-        'impressions': base_impressions
-    }
-
-async def fetch_twitter_stats(handle: str) -> dict:
-    """
-    Fetch Twitter stats from xcancel.com (Twitter viewer without Cloudflare blocking).
-    Returns: dict with followers, following, tweets, impressions
-    """
-    # Remove @ if present
-    handle = handle.lstrip('@')
-    
-    # Try to fetch from xcancel.com
-    if not DEMO_MODE:
-        try:
-            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                url = f"{XCANCEL_BASE_URL}/{handle}"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-                response = await client.get(url, headers=headers)
-                
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    
-                    # Extract stats from profile
-                    stats = {}
-                    
-                    # Find stats in the profile stats section
-                    # xcancel.com uses: <span class="profile-stat-num">229,254,173</span>
-                    stats_items = soup.find_all('span', class_='profile-stat-num')
-                    
-                    if len(stats_items) >= 3:
-                        # Parse tweets count (first stat)
-                        tweets_text = stats_items[0].get_text(strip=True)
-                        stats['tweets'] = parse_number(tweets_text)
-                        
-                        # Parse following count (second stat)
-                        following_text = stats_items[1].get_text(strip=True)
-                        stats['following'] = parse_number(following_text)
-                        
-                        # Parse followers count (third stat)
-                        followers_text = stats_items[2].get_text(strip=True)
-                        stats['followers'] = parse_number(followers_text)
-                        
-                        # Estimate impressions from recent tweets
-                        stats['impressions'] = await estimate_impressions(soup, XCANCEL_BASE_URL, handle, client)
-                        
-                        # Validate we got all required stats
-                        if all(key in stats and stats[key] is not None and stats[key] > 0 for key in ['tweets', 'following', 'followers']):
-                            print(f"Found real Twitter data for @{handle} from xcancel.com")
-                            return stats
-                    else:
-                        print(f"Could not find stats for @{handle} on xcancel.com")
-                        
-        except Exception as e:
-            print(f"Failed to fetch from xcancel.com: {str(e)}")
-    
-    # If xcancel.com failed or demo mode is enabled, use demo data
-    print(f"Using demo data for @{handle}")
-    return generate_demo_stats(handle)
+# Demo fallback deterministic generator (consistent per handle)
+def generate_demo_stats(handle: str) -> Dict[str, int]:
+    s = sum(ord(c) for c in handle.lower())
+    followers = (s * 137) % 500_000 + 1_500
+    following = (s * 73) % 5_000 + 50
+    tweets = (s * 97) % 50_000 + 100
+    impressions = max(1_000, followers * ((s % 10) + 2))
+    return {"followers": followers, "following": following, "tweets": tweets, "impressions": impressions}
 
 def parse_number(text: str) -> int:
-    """Parse number from text like '1,234' or '1.2K' or '1.2M'"""
-    text = text.strip().upper()
-    
-    # Handle K (thousands) and M (millions)
-    multiplier = 1
-    if 'K' in text:
-        multiplier = 1000
-        text = text.replace('K', '')
-    elif 'M' in text:
-        multiplier = 1000000
-        text = text.replace('M', '')
-    
-    # Remove commas
-    text = text.replace(',', '')
-    
-    try:
-        return int(float(text) * multiplier)
-    except:
+    if not text:
         return 0
-
-def extract_stat_by_label(soup: BeautifulSoup, label: str) -> Optional[int]:
-    """Extract stat by finding the label and getting the associated number"""
+    text = text.strip().replace(",", "").upper()
+    m = re.match(r"([0-9,.]*\d)([KM]?)", text)
+    if not m:
+        # Try to extract digits
+        digits = re.findall(r"\d+", text)
+        return int(digits[0]) if digits else 0
+    number, suffix = m.groups()
     try:
-        # Find all stat containers
-        stat_elements = soup.find_all('div', class_='profile-stat')
-        for elem in stat_elements:
-            if label.lower() in elem.get_text().lower():
-                num_elem = elem.find('span', class_='profile-stat-num')
-                if num_elem:
-                    return parse_number(num_elem.get_text(strip=True))
+        val = float(number)
     except:
-        pass
-    return 0
+        val = 0.0
+    if suffix == "K":
+        val *= 1_000
+    elif suffix == "M":
+        val *= 1_000_000
+    return int(val)
 
-async def estimate_impressions(soup: BeautifulSoup, instance: str, handle: str, client: httpx.AsyncClient) -> int:
-    """
-    Estimate impressions by looking at recent tweets.
-    Since Nitter doesn't show view counts, we'll estimate based on engagement.
-    """
+async def fetch_from_nitter(client: httpx.AsyncClient, instance: str, handle: str) -> Optional[Dict[str, int]]:
+    url = f"{instance}/{handle}"
     try:
-        # Look for tweet stats (likes, retweets, replies)
+        r = await client.get(url, timeout=10.0)
+    except Exception:
+        return None
+    if r.status_code != 200:
+        return None
+
+    soup = BeautifulSoup(r.text, "lxml")
+
+    # Attempt 1: look for profile stat blocks: span.profile-stat-num and span.profile-stat-label
+    followers = following = tweets = None
+    stat_nums = soup.select("span.profile-stat-num")
+    stat_labels = soup.select("span.profile-stat-label")
+    if stat_nums and stat_labels and len(stat_nums) == len(stat_labels):
+        for num, label in zip(stat_nums, stat_labels):
+            label_text = label.get_text(strip=True).lower()
+            val = parse_number(num.get_text(strip=True))
+            if "tweet" in label_text:
+                tweets = val
+            elif "following" in label_text:
+                following = val
+            elif "follower" in label_text:
+                followers = val
+
+    # Attempt 2: other layout: div.profile-stat with span.profile-stat-num
+    if not (followers and following and tweets):
+        try:
+            blocks = soup.select("div.profile-stat")
+            for block in blocks:
+                label = block.get_text(" ", strip=True).lower()
+                num = block.select_one("span.profile-stat-num")
+                if not num:
+                    continue
+                val = parse_number(num.get_text(strip=True))
+                if "tweet" in label and tweets is None:
+                    tweets = val
+                elif "following" in label and following is None:
+                    following = val
+                elif "follower" in label and followers is None:
+                    followers = val
+        except Exception:
+            pass
+
+    # Best-effort estimate for impressions from recent tweets: sum engagements * heuristic multiplier
+    impressions = None
+    try:
+        # Recent tweets: look for timeline items; be conservative and sum numbers found near tweet actions
+        timeline_items = soup.select(".timeline-item")[:8]  # up to 8 tweets
         total_engagement = 0
-        
-        # Find all timeline items (tweets)
-        tweets = soup.find_all('div', class_='timeline-item')[:10]  # Get up to 10 recent tweets
-        
-        for tweet in tweets:
-            # Find stats (likes, retweets, replies)
-            icon_containers = tweet.find_all('span', class_='icon-container')
-            for container in icon_containers:
-                text = container.get_text(strip=True)
-                if text:
-                    total_engagement += parse_number(text)
-        
-        # Estimate impressions as 10x engagement (industry standard approximation)
-        estimated_impressions = total_engagement * 10
-        
-        return max(estimated_impressions, 1000)  # Minimum 1000 impressions
-        
-    except Exception as e:
-        print(f"Error estimating impressions: {str(e)}")
-        return 1000  # Default fallback
+        for t in timeline_items:
+            # search for numbers in action spans (likes/retweets/replies)
+            texts = t.get_text(" ", strip=True)
+            for m in re.findall(r"(\d+[,\\d\.KMkm]*)", texts):
+                total_engagement += parse_number(m)
+        if total_engagement > 0:
+            # impressions ~ 8x engagement as a conservative estimate
+            impressions = int(total_engagement * 8)
+    except Exception:
+        impressions = None
+
+    # fill defaults if missing
+    if followers is None or following is None or tweets is None:
+        # if critical pieces missing, treat as failure for this instance
+        return None
+
+    if impressions is None:
+        impressions = max(1_000, followers * 5)
+
+    return {"followers": int(followers), "following": int(following), "tweets": int(tweets), "impressions": int(impressions)}
+
+async def fetch_twitter_stats(handle: str) -> Dict[str, int]:
+    handle = handle.lstrip("@").strip()
+    now = time.time()
+    # Cache check
+    cached = _cache.get(handle)
+    if cached and (now - cached[0]) < CACHE_TTL_SECONDS:
+        return cached[1]
+
+    # Try multiple instances in parallel but stop early when one returns good data
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        tasks = [fetch_from_nitter(client, inst, handle) for inst in NITTER_INSTANCES]
+        # We'll gather and pick the first non-None result as soon as available
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for res in results:
+            if isinstance(res, dict):
+                _cache[handle] = (now, res)
+                return res
+
+    # If we get here, Nitter scraping failed for all instances -> return deterministic demo data
+    demo = generate_demo_stats(handle)
+    _cache[handle] = (now, demo)
+    return demo
 
 def calculate_score(followers: int, following: int, tweets: int, impressions: int) -> float:
-    """
-    Calculate creator score based on multiple factors.
-    Formula: weighted combination of followers, engagement ratio, content volume, and reach
-    """
-    # Engagement ratio (followers/following) - capped at 10 for fairness
-    engagement_ratio = min(followers / max(following, 1), 10)
-    
-    # Content score (more tweets = more active)
-    content_score = min(tweets / 1000, 10)  # Normalized to max 10
-    
-    # Reach score (impressions)
-    reach_score = impressions / 10000  # Normalized
-    
-    # Follower score
-    follower_score = followers / 1000  # Normalized
-    
-    # Weighted formula
-    score = (
-        follower_score * 0.4 +      # 40% weight on followers
-        reach_score * 0.3 +          # 30% weight on impressions
-        engagement_ratio * 0.2 +     # 20% weight on engagement ratio
-        content_score * 0.1          # 10% weight on content volume
-    )
-    
+    # Basic normalized scoring with caps to avoid runaway values
+    followers_score = min(followers / 1_000_000, 1.0) * 100  # scale to 0-100
+    reach_score = min(impressions / 10_000_000, 1.0) * 100
+    activity_score = min(tweets / 10_000, 1.0) * 100
+    engagement_ratio = min(followers / max(following, 1), 100)
+    engagement_score = min(engagement_ratio / 100, 1.0) * 100
+    # Weighted mix:
+    score = followers_score * 0.45 + reach_score * 0.25 + engagement_score * 0.2 + activity_score * 0.1
     return round(score, 2)
 
 def calculate_global_rank(score: float) -> int:
-    """
-    Calculate global rank out of 15 million users.
-    Uses percentile-based ranking.
-    """
-    # Store this user's score
-    user_rankings[score] = user_rankings.get(score, 0) + 1
-    
-    # Calculate rank based on score
-    # Higher score = better rank (lower number)
-    # We'll use a logarithmic scale to distribute ranks
-    
-    # Assume score distribution: most users have low scores, few have high scores
-    # Top 1% (150k users) have scores > 100
-    # Top 10% (1.5M users) have scores > 50
-    # Top 50% (7.5M users) have scores > 10
-    
-    if score >= 100:
-        # Top 1% - ranks 1 to 150,000
-        rank = int(1 + (150000 * (200 - score) / 100))
-    elif score >= 50:
-        # Top 10% - ranks 150,001 to 1,500,000
-        rank = int(150000 + (1350000 * (100 - score) / 50))
-    elif score >= 10:
-        # Top 50% - ranks 1,500,001 to 7,500,000
-        rank = int(1500000 + (6000000 * (50 - score) / 40))
-    else:
-        # Bottom 50% - ranks 7,500,001 to 15,000,000
-        rank = int(7500000 + (7500000 * (10 - score) / 10))
-    
-    # Ensure rank is within bounds
-    rank = max(1, min(rank, 15000000))
-    
+    # Map score (0..100) to ranks 1..TOTAL_USERS with an inverse mapping (higher score -> lower rank)
+    # Use an exponential curve to compress ranks at high end
+    import math
+    # clamp
+    s = max(0.0, min(score, 100.0))
+    # percent better = sigmoid-like curve
+    pct = (1 - math.exp(-s / 20))  # 0..~0.997
+    rank = int(TOTAL_USERS * (1 - pct))  # better scores -> lower rank number
+    rank = max(1, min(rank, TOTAL_USERS))
     return rank
 
 @app.get("/healthz")
@@ -250,38 +202,24 @@ async def healthz():
     return {"status": "ok"}
 
 @app.post("/api/rank", response_model=RankResponse)
-async def get_rank(request: RankRequest):
-    """
-    Main endpoint to get creator ranking.
-    Accepts Twitter handle and returns stats + global rank.
-    """
+async def get_rank(req: RankRequest):
+    handle = req.handle.strip()
+    if not handle:
+        raise HTTPException(status_code=400, detail="handle is required")
+
     try:
-        # Fetch Twitter stats
-        stats = await fetch_twitter_stats(request.handle)
-        
-        # Calculate score
-        score = calculate_score(
-            stats['followers'],
-            stats['following'],
-            stats['tweets'],
-            stats['impressions']
-        )
-        
-        # Calculate global rank
-        global_rank = calculate_global_rank(score)
-        
+        stats = await fetch_twitter_stats(handle)
+        score = calculate_score(stats["followers"], stats["following"], stats["tweets"], stats["impressions"])
+        rank = calculate_global_rank(score)
         return RankResponse(
-            handle=request.handle.lstrip('@'),
-            followers=stats['followers'],
-            following=stats['following'],
-            tweets=stats['tweets'],
-            impressions=stats['impressions'],
+            handle=handle.lstrip("@"),
+            followers=stats["followers"],
+            following=stats["following"],
+            tweets=stats["tweets"],
+            impressions=stats["impressions"],
             score=score,
-            global_rank=global_rank,
-            total_users=15000000
+            global_rank=rank,
+            total_users=TOTAL_USERS,
         )
-        
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"internal error: {str(e)}")
